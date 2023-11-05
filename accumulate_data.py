@@ -98,6 +98,17 @@ def get_spotify_metadata_csv(spotify_df, cumul_sids):
     # filtered_df.to_csv('dat/filtered_data.csv')
     return filtered_df
 
+def add_midi_association(midi_df, filtered_df):
+    """
+    using midi_df and filtered_df, find the midis associated with sid
+    """
+    merged_df = filtered_df.merge(midi_df, left_on='track_id', right_on='sid', how='left')
+    merged_df = merged_df.drop('sid', axis=1)
+    # merged_df.to_csv('dat/filtered_data.csv')
+    return merged_df
+
+
+
 
 
 if __name__ == "__main__":
@@ -109,13 +120,14 @@ if __name__ == "__main__":
 
     sids = find_overlap(midi_df, spotify_df)
     spotify_metadata_df = get_spotify_metadata_csv(spotify_df, sids)
+    print(add_midi_association(midi_df, spotify_metadata_df))
 
-    midi_sids = find_disjoint(midi_df, spotify_df)
+    # midi_sids = find_disjoint(midi_df, spotify_df)
 
-    midi_track_data = get_midi_spotify_track_data(midi_sids)
-    midi_full_df = get_midi_spotify_audio_data(midi_track_data)
-
-    cumul_df = pd.concat([spotify_metadata_df, midi_full_df])
+    # midi_track_data = get_midi_spotify_track_data(midi_sids)
+    # midi_full_df = get_midi_spotify_audio_data(midi_track_data)
     #
-    cumul_df.to_csv('dat/all_midi_metadata.csv')
+    # cumul_df = pd.concat([spotify_metadata_df, midi_full_df])
+    # #
+    # cumul_df.to_csv('dat/TEMP_all_midi_metadata.csv')
 
