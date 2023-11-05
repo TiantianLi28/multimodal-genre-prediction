@@ -2,21 +2,75 @@ import pandas as pd
 import numpy as np
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+import requests as r
+import time
 
 
 # CLIENT_ID = "662e93abaeff48e5bc0d755259cdb707"
 # CLIENT_SECRET = "60c642c3f153486a84e0605b35bf50dd"
 
 
-def get_midi_spotify_data(sids):
-    # parameters = {'track_id' : None ,'track_name','track_artist','lyrics','track_popularity','track_album_id','track_album_name','track_album_release_date','playlist_name','playlist_id','playlist_genre','playlist_subgenre','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo','duration_ms','language'}
+def get_midi_spotify_track_data(sids):
+    midi_data = []
     spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-    # for id in sids:
+    track_id = sids[0]
+    # meta_data = spotify.track(track_id)
+    # return meta_data
+    for track_id in sids:
+        print(track_id)
+        # get meta_data
+        meta_data = spotify.track(track_id)
+        track_name = meta_data['name']
+        track_artist = meta_data['artists'][0]['name']
+        track_popularity = meta_data['popularity']
+        track_album_id = meta_data['album']['id']
+        track_album_name = meta_data['album']['name']
+        track_album_release_date = meta_data['album']['release_date']
+
+        # lyrics
+        lyrics = None
+        language = None
+        link = f"https://spotify-lyric-api-984e7b4face0.herokuapp.com/?trackid={track_id}"
+        results = r.get(link).json()
+        if results['error'] == False:
+            lyrics = ""
+            for obj in results['lines']:
+                lyrics += obj['words']
+                lyrics += " "
+            lyrics = lyrics[:-1]
+            language = 'en'
+        # compile
+        parameters = {'track_id': track_id, 'track_name': track_name, 'track_artist' : track_artist, 'lyrics' : lyrics, 'track_popularity' : track_popularity, 'track_album_id' : track_album_id, 'track_album_name' : track_album_name, 'track_album_release_date' : track_album_release_date, 'playlist_name' : None, 'playlist_id' : None, 'playlist_genre' : None, 'playlist_subgenre' : None, 'language' : language}
+        # parameters = {'track_id': track_id, 'track_name': track_name, 'track_artist' : track_artist, 'lyrics' : lyrics, 'track_popularity' : track_popularity, 'track_album_id' : track_album_id, 'track_album_name' : track_album_name, 'track_album_release_date' : track_album_release_date, 'playlist_name' : None, 'playlist_id' : None, 'playlist_genre' : None, 'playlist_subgenre' : None, 'danceability' : danceability, 'energy' : energy, 'key' : key, 'loudness' : loudness, 'mode' : mode, 'speechiness' : speechiness, 'acousticness' : acousticness, 'instrumentalness' : instrumentalness, 'liveness' : liveness, 'valence' : valence, 'tempo' : tempo, 'duration_ms' : duration_ms, 'language' : language}
+        midi_data.append(parameters)
+    return midi_data
 
 
-    meta_data = spotify.track(sids[0])
-    audio_features = spotify.audio_analysis(sids[0])
-    return meta_data, audio_features
+def get_midi_spotify_audio_data(midi_data):
+    try:
+        spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+
+        for parameters in midi_data:
+            track_id = parameters['track_id']
+            print(track_id)
+            audio_features = spotify.audio_features(track_id)
+            parameters['danceability'] = audio_features[0]['danceability']
+            parameters['energy'] = audio_features[0]['energy']
+            parameters['key'] = audio_features[0]['key']
+            parameters['loudness'] = audio_features[0]['loudness']
+            parameters['mode'] = audio_features[0]['mode']
+            parameters['speechiness'] = audio_features[0]['speechiness']
+            parameters['acousticness'] = audio_features[0]['acousticness']
+            parameters['instrumentalness'] = audio_features[0]['instrumentalness']
+            parameters['liveness'] = audio_features[0]['liveness']
+            parameters['valence'] = audio_features[0]['valence']
+            parameters['tempo'] = audio_features[0]['tempo']
+            parameters['duration_ms'] = audio_features[0]['duration_ms']
+    except Exception as e:
+        print("Gathering all data failed due to:" + str(e))
+    df = pd.DataFrame(midi_data)
+    return df
+
 
 def find_overlap(midi_df, spotify_df):
     """
@@ -41,7 +95,9 @@ def get_spotify_metadata_csv(spotify_df, cumul_sids):
     using the sids extracted, separate metadata from cumulative spotify data
     """
     filtered_df = spotify_df[spotify_df['track_id'].isin(cumul_sids)]
-    filtered_df.to_csv('dat/filtered_data.csv')
+    # filtered_df.to_csv('dat/filtered_data.csv')
+    return filtered_df
+
 
 
 if __name__ == "__main__":
@@ -52,8 +108,14 @@ if __name__ == "__main__":
     spotify_df = pd.read_csv(spotify_metadata)
 
     sids = find_overlap(midi_df, spotify_df)
-    # get_spotify_metadata_csv(spotify_df, sids)
+    spotify_metadata_df = get_spotify_metadata_csv(spotify_df, sids)
 
     midi_sids = find_disjoint(midi_df, spotify_df)
 
-    print(get_midi_spotify_data(midi_sids))
+    midi_track_data = get_midi_spotify_track_data(midi_sids)
+    midi_full_df = get_midi_spotify_audio_data(midi_track_data)
+
+    cumul_df = pd.concat([spotify_metadata_df, midi_full_df])
+    #
+    cumul_df.to_csv('dat/all_midi_metadata.csv')
+
