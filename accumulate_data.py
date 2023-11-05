@@ -102,6 +102,7 @@ def add_midi_association(midi_df, filtered_df):
     """
     using midi_df and filtered_df, find the midis associated with sid
     """
+    print(filtered_df)
     merged_df = filtered_df.merge(midi_df, left_on='track_id', right_on='sid', how='left')
     merged_df = merged_df.drop('sid', axis=1)
     # merged_df.to_csv('dat/filtered_data.csv')
@@ -120,7 +121,8 @@ if __name__ == "__main__":
 
     sids = find_overlap(midi_df, spotify_df)
     spotify_metadata_df = get_spotify_metadata_csv(spotify_df, sids)
-    print(add_midi_association(midi_df, spotify_metadata_df))
+    # print(midi_df)
+    filtered_df = add_midi_association(midi_df, spotify_metadata_df)
 
     # midi_sids = find_disjoint(midi_df, spotify_df)
 
