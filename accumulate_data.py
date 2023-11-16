@@ -4,6 +4,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import requests as r
 import time
+from tqdm import tqdm
 
 
 # CLIENT_ID = "662e93abaeff48e5bc0d755259cdb707"
@@ -12,12 +13,20 @@ import time
 
 def get_midi_spotify_track_data(sids):
     midi_data = []
-    spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-    track_id = sids[0]
-    # meta_data = spotify.track(track_id)
-    # return meta_data
-    for track_id in sids:
-        print(track_id)
+    cid ="662e93abaeff48e5bc0d755259cdb707"
+    secret = "60c642c3f153486a84e0605b35bf50dd"
+    client_credentials_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret) 
+    spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+    #spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+
+    #create file 
+    temp = {'track_id': 0, 'track_name': '', 'track_artist' : '', 'lyrics' : '', 'track_popularity' : 0, 'track_album_id' : 0, 'track_album_name' : '', 'track_album_release_date' : 0, 'playlist_name' : None, 'playlist_id' : None, 'playlist_genre' : None, 'playlist_subgenre' : None, 'language' : '', 'danceability':0,
+    'energy':0,'key':0,'loudness':0, 'mode':0,'speechiness':0, 'acousticness':0,'instrumentalness':0, 'liveness':0,'valence':0,'tempo':0, 'duration_ms':0}
+    pd.DataFrame.from_dict([temp]).to_csv('scraped.csv', index=False)
+
+    i = 0
+    for track_id in tqdm(sids):
+        
         # get meta_data
         meta_data = spotify.track(track_id)
         track_name = meta_data['name']
@@ -39,10 +48,32 @@ def get_midi_spotify_track_data(sids):
                 lyrics += " "
             lyrics = lyrics[:-1]
             language = 'en'
-        # compile
+            
         parameters = {'track_id': track_id, 'track_name': track_name, 'track_artist' : track_artist, 'lyrics' : lyrics, 'track_popularity' : track_popularity, 'track_album_id' : track_album_id, 'track_album_name' : track_album_name, 'track_album_release_date' : track_album_release_date, 'playlist_name' : None, 'playlist_id' : None, 'playlist_genre' : None, 'playlist_subgenre' : None, 'language' : language}
+        audio_features = spotify.audio_features(track_id)
+        parameters['danceability'] = audio_features[0]['danceability']
+        parameters['energy'] = audio_features[0]['energy']
+        parameters['key'] = audio_features[0]['key']
+        parameters['loudness'] = audio_features[0]['loudness']
+        parameters['mode'] = audio_features[0]['mode']
+        parameters['speechiness'] = audio_features[0]['speechiness']
+        parameters['acousticness'] = audio_features[0]['acousticness']
+        parameters['instrumentalness'] = audio_features[0]['instrumentalness']
+        parameters['liveness'] = audio_features[0]['liveness']
+        parameters['valence'] = audio_features[0]['valence']
+        parameters['tempo'] = audio_features[0]['tempo']
+        parameters['duration_ms'] = audio_features[0]['duration_ms']
+        # compile
+        
         # parameters = {'track_id': track_id, 'track_name': track_name, 'track_artist' : track_artist, 'lyrics' : lyrics, 'track_popularity' : track_popularity, 'track_album_id' : track_album_id, 'track_album_name' : track_album_name, 'track_album_release_date' : track_album_release_date, 'playlist_name' : None, 'playlist_id' : None, 'playlist_genre' : None, 'playlist_subgenre' : None, 'danceability' : danceability, 'energy' : energy, 'key' : key, 'loudness' : loudness, 'mode' : mode, 'speechiness' : speechiness, 'acousticness' : acousticness, 'instrumentalness' : instrumentalness, 'liveness' : liveness, 'valence' : valence, 'tempo' : tempo, 'duration_ms' : duration_ms, 'language' : language}
         midi_data.append(parameters)
+        #flush every 500 sids
+        if i== 500:
+            print(i)
+            pd.DataFrame(midi_data).to_csv('scraped.csv', mode = 'a', header=None, index=False)
+            i = 0
+            midi_data = []
+        i +=1
     return midi_data
 
 
@@ -107,9 +138,6 @@ def add_midi_association(midi_df, filtered_df):
     merged_df = merged_df.drop('sid', axis=1)
     # merged_df.to_csv('dat/filtered_data.csv')
     return merged_df
-
-
-
 
 
 if __name__ == "__main__":
