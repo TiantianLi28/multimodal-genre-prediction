@@ -174,4 +174,4 @@ def join_track_audio_csv():
 
     #reorder to match already existing format 
 
-    merged_track_audio.to_csv('scrapes_concat.csv')
+    merged_track_audio.to_csv('scrapes_concat.csv',index=False,header=False)
