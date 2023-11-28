@@ -1,9 +1,0 @@
-AAAAAAAAA
-
-Just a to do list in the case that my computer dies:
-- Ellie
-
-1) Scrape lyrics from Musixmatch for MIDI associate Spotify tracks
-- https://developer.spotify.com/documentation/web-api/reference/get-track
-- https://developer.spotify.com/documentation/web-api/reference/get-several-audio-features
-- https://developer.musixmatch.com/
