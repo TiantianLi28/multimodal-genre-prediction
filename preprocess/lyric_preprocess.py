@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -53,17 +54,18 @@ def transform(lyrics):
     :param lyrics: str, preprocessed lyrics
     :return:
     """
+    lyrics = preprocess_lyrics(lyrics)
     model = SentenceTransformer('all-MiniLM-L6-v2')
 
     embeddings = model.encode(lyrics)
-    for sentence, embedding in zip(lyrics, embeddings):
-        print("Sentence:", sentence)
-        print("Embedding:", embedding)
-
+    average_embeddings = np.mean(embeddings, axis=1)
+    print(average_embeddings)
+    return average_embeddings
 
 if __name__ == "__main__":
     df = pd.read_csv('dat/filtered_data.csv')
+    lyrics = df['lyrics']
+
     test = df['lyrics'][0]
-    lyrics = preprocess_lyrics(test)
     # print(lyrics)
-    transform(lyrics)
+    transform(test)
