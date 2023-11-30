@@ -78,29 +78,13 @@ def run_RF(trainx, trainy, testx, testy):
     test_metrics = metrics(forest, testx, testy)
     return test_metrics
 
-
-def extract_numbers(input_string):
-    # Use regular expression to find all numeric substrings, including scientific notation
-    numbers = re.findall(r'-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?', input_string)
-
-    # Convert the list of strings to a list of floats
-    numbers = list(map(float, numbers))
-
-    return numbers
-
-
 if __name__ == "__main__":
     input_csv = 'dataset_with_embeddings_ellie.csv'
     df = pd.read_csv(input_csv)
     # output
     y = df['genre']
     # splitting data — todo get the subset of midi stuff
-    lyric_vectors = []
     lyrics = df['lyric-embeddings']
-    for lyric in lyrics:
-        lyric_vector = extract_numbers(lyric)
-        lyric_vectors.append(lyric_vector)
-    lyric_vectors = np.array(lyric_vectors)
 
     audio_indices = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
     audio_metadata = df.iloc[:, audio_indices].copy()
