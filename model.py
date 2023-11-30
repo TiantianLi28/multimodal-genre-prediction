@@ -1,11 +1,17 @@
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_score, recall_score, f1_score
 import pandas as pd
 import numpy as np
 import re
 
+HIDDEN_PARAMS = [(100,100,100), (100,80,60), (150, 120, 100), (150,100)]
+ALPHA = [1e-3, 1e-4, 1e-5]
+ESTIMATORS = [50,100,150,200]
+MAX_DEPTH =[3,5,7,10]
+MIN_LEAF = [25,50,75,100]
 
 def metrics(model, x, y):
     prediction = model.predict(x)
@@ -79,16 +85,25 @@ def run_RF(trainx, trainy, testx, testy):
     return test_metrics
 
 if __name__ == "__main__":
-    input_csv = 'dataset_with_embeddings_ellie.csv'
+    input_csv = 'mega_data.csv'
     df = pd.read_csv(input_csv)
-    # output
+    
     y = df['genre']
+
+    X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.2, random_state=42)
+
+    
     # splitting data
-    lyrics = df.iloc[:, 26:410]
-    midi = df.iloc[:, 410:]
+
+    lyrics_train = X_train.iloc[:, 26:410]
+    lyrics_test = X_test.iloc[:, 26:410]
+    midi_train = X_train.iloc[:, 410:]
+    midi_test = X_test.iloc[:, 410:]
 
     audio_indices = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
-    audio_metadata = df.iloc[:, audio_indices].copy()
-    audio_metadata = audio_metadata.values
+    audio_metadata_train = X_train.iloc[:, audio_indices].copy()
+    audio_metadata_test = X_test.iloc[:, audio_indices].copy()
+    audio_metadata_train = audio_metadata_train.values
+    audio_metadata_test = audio_metadata_test.values
 
     # run models
