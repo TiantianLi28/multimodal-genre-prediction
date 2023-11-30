@@ -58,7 +58,7 @@ def transform(lyrics):
     embeddings = model.encode(lyrics)
     # average_embeddings = np.mean(embeddings, axis=1)
     # print(average_embeddings)
-    print(embeddings)
+    # print(embeddings)
     return embeddings
 
 if __name__ == "__main__":
