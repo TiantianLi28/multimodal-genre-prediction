@@ -83,8 +83,9 @@ if __name__ == "__main__":
     df = pd.read_csv(input_csv)
     # output
     y = df['genre']
-    # splitting data — todo get the subset of midi stuff
-    lyrics = df['lyric-embeddings']
+    # splitting data
+    lyrics = df.iloc[:, 26:410]
+    midi = df.iloc[:, 410:]
 
     audio_indices = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
     audio_metadata = df.iloc[:, audio_indices].copy()
