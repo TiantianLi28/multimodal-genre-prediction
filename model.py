@@ -15,6 +15,7 @@ def metrics(model, x, y):
     scores = {'f1' : f1, 'precision' : precision, 'recall' : recall}
 
     return scores
+
 def run_MLP(trainx, trainy, testx, testy):
     hidden_layers = []
     activations = ['logistic', 'tanh', 'relu']
@@ -25,7 +26,7 @@ def run_MLP(trainx, trainy, testx, testy):
 
         nn = MLPClassifier()
 
-        grid_search = GridSearchCV(estimator=nn, param_grid=grid, scoring='roc_auc')
+        grid_search = GridSearchCV(estimator=nn, param_grid=grid, scoring=['precision', 'recall'])
 
         grid_search.fit(x, y)
 
@@ -56,7 +57,7 @@ def run_RF(trainx, trainy, testx, testy):
         # 2a
         grid = {'n_estimators' : num_estimators, 'max_depth': dparams, 'min_samples_leaf': lsparams}
         rf = RandomForestClassifier()
-        grid_search = GridSearchCV(estimator=rf, param_grid=grid, scoring='roc_auc')
+        grid_search = GridSearchCV(estimator=rf, param_grid=grid, scoring=['precision', 'recall'])
         grid_search.fit(x, y)
         best_estimator = grid_search.best_params_['n_estimators']
         best_depth = grid_search.best_params_['max_depth']
