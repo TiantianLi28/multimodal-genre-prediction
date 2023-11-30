@@ -2,6 +2,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_score, recall_score, f1_score
+import pandas as pd
 
 
 def metrics(model, x, y):
@@ -77,4 +78,11 @@ def run_RF(trainx, trainy, testx, testy):
 
 
 if __name__ == "__main__":
-    print("aaaaaaa")
+    input_csv = ''
+    df = pd.read_csv(input_csv)
+    # output
+    y  = df['genre']
+    # splitting data — todo get the subset of metadata and midi stuff
+    lyrics = df['lyrics']
+
+    # run models
