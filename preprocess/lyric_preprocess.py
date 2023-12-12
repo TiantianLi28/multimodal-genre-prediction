@@ -52,7 +52,7 @@ def transform(lyrics):
     :param lyrics: str, preprocessed lyrics
     :return:
     """
-    lyrics = preprocess_lyrics(lyrics)
+    # lyrics = preprocess_lyrics(lyrics)
     model = SentenceTransformer('all-MiniLM-L6-v2')
 
     embeddings = model.encode(lyrics)
@@ -62,12 +62,12 @@ def transform(lyrics):
     return embeddings
 
 if __name__ == "__main__":
-    df = pd.read_csv('dat/data_with_genre713.csv')
+    df = pd.read_csv('mega_data.csv')
     lyrics = df['lyrics']
     embeddings = []
     for lyric in tqdm(lyrics):
         embedding = transform(lyric)
         embeddings.append(embedding)
     df['lyric-embeddings'] = embeddings
-    df.to_csv('dataset_with_embeddings_2120.csv', index=False)
+    df.to_csv('mega_data2.csv', index=False)
     # print(lyrics)
